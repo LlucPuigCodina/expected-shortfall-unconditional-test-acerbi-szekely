@@ -1,6 +1,6 @@
 # expected-shortfall-unconditional-test-acerbi-szekely
 
-`Python` implementation of the Direct Expected Shortfall Test of [Acerbi and Szekely (2014)](https://www.msci.com/documents/10199/22aa9922-f874-4060-b77a-0f0e267a489b)
+`Python` implementation of the Direct Expected Shortfall Test of [Acerbi and Szekely (2014)](https://www.msci.com/documents/10199/22aa9922-f874-4060-b77a-0f0e267a489b) by Lluc Puig Codina
 
 ## References
 
