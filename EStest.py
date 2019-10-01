@@ -13,8 +13,8 @@ class EStest:
     Szekely (2014). This test does not require the assumption of independence 
     for the realizations of the stochastic process describing portfolio returns
     
-    Acerbi, C., and B. Szekely, "Backtesting Expected Shortfall", MSCI Inc., 
-    December, 2014.
+    Acerbi, Carlo, and Balazs Szekely. "Back-testing expected shortfall." 
+    Risk 27.11 (2014): 76-81.
     """
     
     def __init__(self, X_obs, X, VaRLevel, VaR, ES, nSim, alpha = 0.05, 
