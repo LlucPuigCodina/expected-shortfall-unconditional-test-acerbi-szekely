@@ -52,9 +52,9 @@ print(EStest.__init__.__doc__)
             
     
 
-## Testing
+## Examples
 
-We run the test under two different scenarios. In the first one portfolio returns are generated from a T-student distribution with degrees of freedom equal to $\nu$ = 2 but returns are assumed to follow a standard normal.
+We run the test under two different scenarios. In the first one portfolio returns are generated from a T-student distribution with degrees of freedom equal to ν = 5 but returns are assumed to follow a standard normal.
 We can observe that the Value at Risk and Expected Shortfall estimates at 95% are rejected.
 
 
