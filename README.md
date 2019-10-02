@@ -65,8 +65,8 @@ T = 250 #Sample size
 r = 0.05 #VaRLevel
 nu = 5 #degrees of freedom for the standard t-Student
 x = np.random.standard_t(df = nu, size = T) #Realized values
-mu  = 0 #Sample mean
-sigma = 1 #Sample standard deviation mean
+mu  = 0 #mean
+sigma = 1 #standard deviation
 
 #Simulation of returns from the assumed normal distribution
 def sim_returns(): return np.random.normal(loc = mu, scale = sigma, size = T) 
