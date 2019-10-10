@@ -17,8 +17,7 @@ class EStest:
     Risk 27.11 (2014): 76-81.
     """
     
-    def __init__(self, X_obs, X, VaRLevel, VaR, ES, nSim, alpha = 0.05, 
-                 print_results = True):
+    def __init__(self, X_obs, X, VaRLevel, VaR, ES, nSim, alpha = 0.05):
         """        
         X_obs (np.array): Numpy array of size 1xT containing the actual 
                           realization of the portfolio return.
@@ -48,9 +47,7 @@ class EStest:
                     
         alpha (float): Number in [0, 1] denoting the Type I error, the 
                        significance level threshold used to compute the 
-                       critical value. Default set at 5%
-                       
-        print_results (boolean): Boolean for whether results should be printed. 
+                       critical value. Default set at 5% 
         """
         self.X_obs = X_obs
         self.T = X_obs.size
@@ -62,20 +59,6 @@ class EStest:
         self.alpha = alpha
         
         self.simulation()
-        
-        if print_results == True:
-            print('----------------------------------------------------------------')
-            print('   Direct/Unconditional Expected Shortfall Test by Simulation   ')
-            print('----------------------------------------------------------------')
-            print('Number of observations: ' + str(self.T))
-            print('Number of VaR breaches: ' + str(self.VaR_breaches))
-            print('Expected number of VaR breaches: ' + str(self.T*self.VaRLevel))
-            print('ES Statistic: ' + str(self.Z_obs))
-            print('Expected ES Statistic: ' + str(0))
-            print('Critical Value at α = ' + str(self.alpha) + ': ' + str(self.critical_value))
-            print('p-value: ' + str(self.p_value))
-            print('Number of Monte Carlo simulations: ' + str(self.nSim))
-            print('----------------------------------------------------------------')
         
         
     def statistic(self, X, I):
@@ -117,3 +100,20 @@ class EStest:
         
         self.critical_value = np.quantile(statistics, self.alpha)
         self.p_value = np.mean(statistic_breaches)
+        
+    def print(self):
+        """
+        Prints the results of the test and some other usefull information.
+        """
+        print('----------------------------------------------------------------')
+        print('   Direct/Unconditional Expected Shortfall Test by Simulation   ')
+        print('----------------------------------------------------------------')
+        print('Number of observations: ' + str(self.T))
+        print('Number of VaR breaches: ' + str(self.VaR_breaches))
+        print('Expected number of VaR breaches: ' + str(self.T*self.VaRLevel))
+        print('ES Statistic: ' + str(self.Z_obs))
+        print('Expected ES Statistic under the null hypothesis: ' + str(0))
+        print('Critical Value at α = ' + str(self.alpha) + ': ' + str(self.critical_value))
+        print('p-value: ' + str(self.p_value))
+        print('Number of Monte Carlo simulations: ' + str(self.nSim))
+        print('----------------------------------------------------------------')

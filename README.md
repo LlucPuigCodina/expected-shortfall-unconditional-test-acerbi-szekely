@@ -46,85 +46,173 @@ print(EStest.__init__.__doc__)
                         
             alpha (float): Number in [0, 1] denoting the Type I error, the 
                            significance level threshold used to compute the 
-                           critical value. Default set at 5%
-                           
-            print_results (boolean): Boolean for whether results should be printed. 
+                           critical value. Default set at 5% 
             
     
 
 ## Examples
 
-We run the test under two different scenarios. In the first one portfolio returns are generated from a T-student distribution with degrees of freedom equal to ν = 5 but returns are assumed to follow a standard normal.
-We can observe that the Value at Risk and Expected Shortfall estimates at 95% are rejected.
+We run the test under two different scenarios. In the first scenario the portfolio returns are generated from a normal distribution mixture such that there is a bump in the left tail compared to a normal distribution. In the second case the portfolio returns are generated form a normal.
+
+Then returns are always assumed to follow a normal distribution with the sample mean and variance. We can observe that the Value at Risk and Expected Shortfall estimates at 95% are strongly rejected in the first case but not in the second case.
+
+### Test 1
+$$
+TDGP: r_t \sim \ \ \text{i.i.d} \ \ \mathbb{1}\{\phi_t = 0\} \mathcal{N}(\mu_{standard}, \sigma_{stress}) + \mathbb{1}\{\phi_t = 1\} \mathcal{N}(\mu_{stress}, \sigma_{stress})
+$$
+where $\phi_t \sim$ i.i.d $Bernoulli(p)$.
+
+$$
+Model: r_t \sim \ \ \text{i.i.d} \ \ \mathcal{N}(\hat{\mu}, \hat{\sigma})
+$$
 
 
 ```python
 np.random.seed(0) #Fix the seed for reproducible results
 
-T = 250 #Sample size
+T = 3000 #Sample size of three thousand
 r = 0.05 #VaRLevel
-nu = 5 #degrees of freedom for the standard t-Student
-x = np.random.standard_t(df = nu, size = T) #Realized values
-mu  = 0 #mean
-sigma = 1 #standard deviation
+p_stress = 0.03 #Stress scenario probability
+standard_mu  = 0.03 #mean for standard times
+standard_sigma = 0.1 #standard deviation for standard times
+stress_mu  = -0.32 #mean for stress times
+stress_sigma = 0.03 #standard deviation for stress times
+
+u =np.random.binomial(size=T, n=1, p= p_stress) #Stress indicator
+standard = np.random.normal(loc = standard_mu, scale = standard_sigma, size = T) #PnL under standard times
+stress =  np.random.normal(loc = stress_mu, scale = stress_sigma, size = T) #PnL under stress times
+x = (np.ones(T)-u)*standard + u*stress #PnL realization
 
 #Simulation of returns from the assumed normal distribution
-def sim_returns(): return np.random.normal(loc = mu, scale = sigma, size = T) 
+sample_mu = np.mean(x)
+sample_sigma = np.std(x)
+def sim_returns(): return np.random.normal(loc = sample_mu, scale = sample_sigma, size = T) 
 
 #Value-at-Risk estimates
-y = np.repeat(stats.norm.ppf(r, loc = mu, scale = sigma), T)
+k = np.repeat(stats.norm.ppf(r, loc = sample_mu, scale = sample_sigma), T)
 
 #Expected Shortfall estimates
-z = stats.norm.ppf(r, loc = mu, scale = sigma) #Estimated VaR
-z = (z-mu)/sigma #Normalized VaR
-z = mu - sigma*(stats.norm.pdf(z)/stats.norm.cdf(z)) #Estimated ES
+z = stats.norm.ppf(r, loc = sample_mu, scale = sample_sigma) #Estimated VaR
+z = (z-sample_mu)/sample_sigma #Normalized VaR
+z = sample_mu - sample_sigma*(stats.norm.pdf(z)/stats.norm.cdf(z)) #Estimated ES
 z = np.repeat(z ,T) #ES projections
 #The procedure to compute the ES under a normal distribution can be obtained
 #here: https://stats.stackexchange.com/questions/166273/expected-value-of-x-in-a-normal-distribution-given-that-it-is-below-a-certain-v
+```
 
-#Test Standard T-Student
-test_student = EStest(X_obs = x, X = sim_returns, VaRLevel = r, VaR = y,
-                    ES = z, nSim = 100000, print_results = True) 
-#one-hundred-thousand Monte-Carlo simulations
+
+```python
+from scipy.stats import norm
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
+n, bins, patches = plt.hist(x, bins=80, density = True, color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+
+y = mlab.normpdf(bins, sample_mu, sample_sigma)
+l = plt.plot(bins, y, 'r--', linewidth=2)
+
+plt.grid(axis='y', alpha=0.75)
+plt.title('Realized PnL')
+plt.show()
+```
+
+    C:\Anaconda3\lib\site-packages\ipykernel_launcher.py:8: MatplotlibDeprecationWarning: scipy.stats.norm.pdf
+      
+    
+
+
+![png](output_6_1.png)
+
+
+
+```python
+test1 = EStest(X_obs = x, X = sim_returns, VaRLevel = r, VaR = k, ES = z, nSim = 100000)
+test1.print()
 ```
 
     ----------------------------------------------------------------
        Direct/Unconditional Expected Shortfall Test by Simulation   
     ----------------------------------------------------------------
-    Number of observations: 250
-    Number of VaR breaches: 27
-    Expected number of VaR breaches: 12.5
-    ES Statistic: -1.5893348791528705
-    Expected ES Statistic: 0
-    Critical Value at α = 0.05: -0.48128966742960516
-    p-value: 0.0
+    Number of observations: 3000
+    Number of VaR breaches: 156
+    Expected number of VaR breaches: 150.0
+    ES Statistic: -0.29866795648622135
+    Expected ES Statistic under the null hypothesis: 0
+    Critical Value at α = 0.05: -0.13457639121094353
+    p-value: 0.00018
     Number of Monte Carlo simulations: 100000
     ----------------------------------------------------------------
     
 
-In the second case both portfolio returns and the estimated return distribution follow a standard normal. 
-We can observe that the Value at Risk and Expected Shortfall estimates at 95% are not rejected.
+### Test 2
+
+$$
+TDGP: r_t \sim \ \ \text{i.i.d} \ \ \mathcal{N}(\mu_{standard}, \sigma_{standard})
+$$
+
+$$
+Model: r_t \sim \ \ \text{i.i.d} \ \ \mathcal{N}(\hat{\mu}, \hat{\sigma})
+$$
 
 
 ```python
-#Standard Normal simulation
-p = np.random.normal(size = T)
+#Simulation of returns from the assumed normal distribution
+sample_mu = np.mean(standard)
+sample_sigma = np.std(standard)
+def sim_returns(): return np.random.normal(loc = sample_mu, scale = sample_sigma, size = T) 
 
-#Test Standard Normal
-test_normal = EStest(X_obs = p, X = sim_returns, VaRLevel = r, VaR = y,
-                    ES = z, nSim = 100000, print_results = True) 
+#Value-at-Risk estimates
+k = np.repeat(stats.norm.ppf(r, loc = sample_mu, scale = sample_sigma), T)
+
+#Expected Shortfall estimates
+z = stats.norm.ppf(r, loc = sample_mu, scale = sample_sigma) #Estimated VaR
+z = (z-sample_mu)/sample_sigma #Normalized VaR
+z = sample_mu - sample_sigma*(stats.norm.pdf(z)/stats.norm.cdf(z)) #Estimated ES
+z = np.repeat(z ,T) #ES projections
+```
+
+
+```python
+from scipy.stats import norm
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
+n, bins, patches = plt.hist(standard, bins=80, density = True, color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+
+y = mlab.normpdf(bins, sample_mu, sample_sigma)
+l = plt.plot(bins, y, 'r--', linewidth=2)
+
+plt.grid(axis='y', alpha=0.75)
+plt.title('Realized PnL')
+plt.show()
+```
+
+    C:\Anaconda3\lib\site-packages\ipykernel_launcher.py:8: MatplotlibDeprecationWarning: scipy.stats.norm.pdf
+      
+    
+
+
+![png](output_10_1.png)
+
+
+
+```python
+test1 = EStest(X_obs = standard, X = sim_returns, VaRLevel = r, VaR = k, ES = z, nSim = 100000)
+test1.print()
 ```
 
     ----------------------------------------------------------------
        Direct/Unconditional Expected Shortfall Test by Simulation   
     ----------------------------------------------------------------
-    Number of observations: 250
-    Number of VaR breaches: 7
-    Expected number of VaR breaches: 12.5
-    ES Statistic: 0.47382594246166465
-    Expected ES Statistic: 0
-    Critical Value at α = 0.05: -0.4825457500990175
-    p-value: 0.96274
+    Number of observations: 3000
+    Number of VaR breaches: 144
+    Expected number of VaR breaches: 150.0
+    ES Statistic: 0.05483829919134353
+    Expected ES Statistic under the null hypothesis: 0
+    Critical Value at α = 0.05: -0.13637369487936757
+    p-value: 0.74721
     Number of Monte Carlo simulations: 100000
     ----------------------------------------------------------------
     
