@@ -199,8 +199,8 @@ plt.show()
 
 
 ```python
-test1 = EStest(X_obs = standard, X = sim_returns, VaRLevel = r, VaR = k, ES = z, nSim = 100000)
-test1.print()
+test2 = EStest(X_obs = standard, X = sim_returns, VaRLevel = r, VaR = k, ES = z, nSim = 100000)
+test2.print()
 ```
 
     ----------------------------------------------------------------
