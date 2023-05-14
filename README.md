@@ -57,9 +57,11 @@ We run the test under two different scenarios. In the first scenario the portfol
 Then returns are always assumed to follow a normal distribution with the sample mean and variance. We can observe that the Value at Risk and Expected Shortfall estimates at 95% are strongly rejected in the first case but not in the second case.
 
 ### Test 1
+
 $$
-TDGP: r_t \sim \ \ \text{i.i.d} \ \ \mathbb{1}\{\phi_t = 0\} \mathcal{N}(\mu_{standard}, \sigma_{stress}) + \mathbb{1}\{\phi_t = 1\} \mathcal{N}(\mu_{stress}, \sigma_{stress})
+TDGP: r_t \sim \ \ \text{i.i.d} \ \ \mathbb{1}(\phi_t = 0) \mathcal{N}(\mu_{standard}, \sigma_{standard}) + \mathbb{1}(\phi_t = 1) \mathcal{N}(\mu_{stress}, \sigma_{stress})
 $$
+
 where $\phi_t \sim$ i.i.d $Bernoulli(p)$.
 
 $$
